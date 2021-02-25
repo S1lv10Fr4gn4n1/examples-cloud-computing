@@ -1,0 +1,9 @@
+version: '3.1'
+services:
+  rabbitmq:
+    # https://registry.hub.docker.com/_/rabbitmq/
+    image: rabbitmq:3.8.9-management
+    hostname: photoapp-rabbitmq
+    ports:
+      - 15672:15672
+      - 5672:5672

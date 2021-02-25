@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: webapp
+spec:
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+      - name: webapp
+        image: richardchesterwood/k8s-fleetman-webapp-angular:securewss
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: production-microservice
+        resources:
+          requests:
+            memory: 100Mi
+            cpu: 50m

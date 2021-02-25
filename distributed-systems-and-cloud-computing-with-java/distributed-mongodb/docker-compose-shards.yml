@@ -1,0 +1,131 @@
+# TODO SFS: the failure recovery when the PRIMARY node goes down is not working
+# The remening nodes doesn't get elected to PRIMARY
+
+version: '3.4'
+
+services:
+  mongodb-0:
+    hostname: mongodb-0
+    image: mongo:4.4.4-bionic
+    volumes:
+    - mongodb-0-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    ports:
+      - 27017:27017
+    networks:
+    - mongodb-network
+
+  mongodb-1:
+    hostname: mongodb-1
+    image: mongo:4.4.4-bionic
+    volumes:
+    - mongodb-1-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    ports:
+      - 27018:27017
+    networks:
+    - mongodb-network
+
+  mongodb-2:
+    hostname: mongodb-2
+    image: mongo:4.4.4-bionic
+    volumes:
+    - mongodb-2-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    ports:
+      - 27019:27017
+    networks:
+    - mongodb-network
+
+  mongodb-setup:
+    image: mongo:4.4.4-bionic
+    volumes:
+      - ./scripts:/scripts
+    entrypoint: [ "/scripts/setup.sh" ]
+    networks:
+    - mongodb-network
+    depends_on:
+      mongodb-0:
+        condition: service_healthy
+      mongodb-1:
+        condition: service_healthy
+      mongodb-2:
+        condition: service_healthy
+
+  mongo-express:
+    image: mongo-express:0.54.0
+    ports:
+    - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb-0,mongodb-1,mongodb-2
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: root
+      # ME_CONFIG_BASICAUTH_USERNAME: test
+      # ME_CONFIG_BASICAUTH_PASSWORD: test
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+    networks:
+    - mongodb-network
+    # depends_on:
+    #   mongodb-0:
+    #     condition: service_healthy
+    #   mongodb-1:
+    #     condition: service_healthy
+    #   mongodb-2:
+    #     condition: service_healthy
+
+  mongodb-reader:
+    build: mongodb-reader
+    image: mongodb-reader
+    hostname: mongodb-reader
+    environment:
+      STUDENT_PARAMS: "physics John1 30 95"
+      MONGO_DB_URL: "mongodb://mongodb-0:27017,mongodb-1:27018,mongodb-2:27019/?replicaSet=rs0"
+    networks:
+    - mongodb-network
+    # depends_on:
+    #   mongodb-0:
+    #     condition: service_healthy
+    #   mongodb-1:
+    #     condition: service_healthy
+    #   mongodb-2:
+    #     condition: service_healthy
+
+networks:
+  mongodb-network:
+    name: mongodb-network
+    driver: bridge
+
+volumes:
+  mongodb-0-data:
+    driver: local
+  mongodb-1-data:
+    driver: local
+  mongodb-2-data:
+    driver: local

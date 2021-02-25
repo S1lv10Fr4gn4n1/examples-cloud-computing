@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: Service
+metadata:
+  # Unique key of the Service instance
+  name: fleetman-webapp
+spec:
+  # This defines which pods are going to be represented by this Service
+  # The service becomes a network endpoint for either other services
+  # or maybe external users to connect to (eg  browser)
+  selector:
+    app: webapp
+
+  ports:
+    - name: http
+      port: 80
+      # targetPort: 30080 # (optional)
+
+      # just for NodePort type, needs to start from 30k
+      # just for development
+      # nodePort: 30080
+
+  # type: ClusterIP # just accessable by services inside of the Cluster
+  # needs to be change to LoadBalancer to be accessable outside of the cluster
+  type: LoadBalancer
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleetman-queue
+spec:
+  selector:
+    app: queue
+  ports:
+    - name: http
+      port: 8161
+      # nodePort: 30010
+    - name: endpoint
+      port: 61616
+  type: ClusterIP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleetman-position-tracker
+spec:
+  selector:
+    app: position-tracker
+  ports:
+    - name: http
+      port: 8080
+  type: ClusterIP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleetman-api-gateway
+spec:
+  selector:
+    app: api-gateway
+  ports:
+    - name: http
+      port: 8080
+  type: ClusterIP

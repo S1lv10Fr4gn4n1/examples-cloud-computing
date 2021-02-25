@@ -1,0 +1,192 @@
+version: '3.1'
+services:
+  rabbitmq:
+    image: rabbitmq:3.8.9-management
+    hostname: photoapp-rabbitmq
+    ports:
+      - 15672:15672
+      - 5672:5672
+
+  zipkin:
+    image: openzipkin/zipkin:2
+    hostname: photoapp-zipkin
+    ports:
+      - 9411:9411
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+    ports:
+      - 9200:9200
+    configs:
+      - source: ./photoapp-elk/elasticsearch/config/elasticsearch.yml
+        target: /usr/share/elasticsearch/config/elasticsearch.yml
+    environment:
+      ELASTIC_PASSWORD: changeme
+      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
+      # Use single node discovery in order to disable production mode and avoid bootstrap checks.
+      # see: https://www.elastic.co/guide/en/elasticsearch/reference/current/bootstrap-checks.html
+      discovery.type: single-node
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.10.2
+    hostname: photoapp-logstash
+    configs:
+      - source: ./photoapp-elk/logstash/config/logstash.yml
+        target: /usr/share/logstash/config/logstash.yml
+      - source: ./photoapp-elk/logstash/pipeline/logstash.conf
+        target: /usr/share/logstash/pipeline/logstash.conf
+    volumes:
+      - type: bind
+        source: ./photoapp-elk/logstash/config/logstash.yml
+        target: /usr/share/logstash/config/logstash.yml
+        read_only: true
+      - type: bind
+        source: ./photoapp-elk/logstash/pipeline/
+        target: /usr/share/logstash/pipeline
+        read_only: true
+      - type: volume
+        source: service_logs
+        target: /usr/share/service_logs/
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.10.2
+    ports:
+      - 5601:5601
+    configs:
+      - source: ./photoapp-elk/kibana/config/kibana.yml
+        target: /usr/share/kibana/config/kibana.yml
+    depends_on:
+      - elasticsearch
+
+  database:
+    image: mysql:8.0.22
+    hostname: photoapp-database
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: abacate
+    volumes:
+      - type: bind
+        source: /var/tmp/mysql_photoapp
+        target: /var/lib/mysql
+
+  adminer:
+    image: adminer
+    hostname: photoapp-adminer
+    ports:
+      - 8088:8080
+    depends_on:
+      - database
+
+  discovery:
+    build: photoapp-discovery-service
+    image: photoapp-discovery-service
+    hostname: photoapp-discovery-service
+    ports:
+      - 8010:8010
+    env_file:
+      - 'variables.env'
+    healthcheck:
+      test: "curl --fail --silent localhost:8010/actuator/health | grep UP || exit 1"
+      interval: 5s
+      retries: 5
+      start_period: 2s
+    volumes:
+      - service_logs:/logs
+    depends_on:
+      configuration:
+        condition: service_healthy
+      database:
+        condition: service_started
+
+  configuration:
+    build: photoapp-api-config-server
+    image: photoapp-api-config-server
+    hostname: photoapp-api-config-server
+    ports:
+      - 8012:8012
+    volumes:
+      - service_logs:/logs
+    env_file:
+      - 'variables.env'
+    healthcheck:
+      test: "curl --fail --silent http://localhost:8012/actuator/health | grep UP || exit 1"
+      interval: 5s
+      retries: 5
+      start_period: 2s
+    depends_on:
+      rabbitmq:
+        condition: service_started
+
+  gateway:
+    build: photoapp-api-gateway
+    image: photoapp-api-gateway
+    hostname: photoapp-api-gateway
+    ports:
+      - 8082:8082
+    volumes:
+      - service_logs:/logs
+    env_file:
+      - 'variables.env'
+    depends_on:
+      discovery:
+        condition: service_healthy
+
+  users:
+    build: photoapp-api-users
+    image: photoapp-api-users
+    hostname: photoapp-api-users
+    deploy:
+      mode: replicated
+      replicas: 1
+    volumes:
+      - service_logs:/logs
+    env_file:
+      - 'variables.env'
+    environment:
+      - SPRING_PROFILES_ACTIVE=${PROFILE}
+    depends_on:
+      discovery:
+        condition: service_healthy
+      kibana:
+        condition: service_started
+      gateway:
+        condition: service_started
+
+  albums:
+    build: photoapp-api-albums
+    image: photoapp-api-albums
+    hostname: photoapp-api-albums
+    deploy:
+      mode: replicated
+      replicas: 1
+    volumes:
+      - service_logs:/logs
+    env_file:
+      - 'variables.env'
+    depends_on:
+      discovery:
+        condition: service_healthy
+
+  account:
+    build: photoapp-api-account
+    image: photoapp-api-account
+    hostname: photoapp-api-account
+    deploy:
+      mode: replicated
+      replicas: 1
+    volumes:
+      - service_logs:/logs
+    env_file:
+      - 'variables.env'
+    depends_on:
+      discovery:
+        condition: service_healthy
+
+volumes:
+  service_logs:

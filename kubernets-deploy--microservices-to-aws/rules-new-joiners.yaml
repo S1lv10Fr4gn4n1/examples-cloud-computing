@@ -1,0 +1,26 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: new-joiner
+  namespace: default
+rules:
+- apiGroups: ["", "apps"] # Core API and apps
+  resources: ["*"] # pods, services, deployments ...
+  verbs: ["get", "list", "watch"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: new-joiners-december2020-role
+  namespace: default
+subjects:
+- kind: User
+  name: silviofragnani
+- kind: User
+  name: johnsmith
+roleRef:
+  kind: Role
+  name: new-joiner
+  apiGroup: rbac.authorization.k8s.io
