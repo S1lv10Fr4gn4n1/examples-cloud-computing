@@ -13,15 +13,14 @@ spec:
   ports:
     - name: http
       port: 80
-      # targetPort: 30080 # (optional)
-
-      # just for NodePort type, needs to start from 30k
-      # just for development
-      # nodePort: 30080
+      # targetPort: 80 # (optional)
+      # nodePort: 30080 # NodePort type, for development, needs to start from 30000
 
   # type: ClusterIP # just accessable by services inside of the Cluster
   # needs to be change to LoadBalancer to be accessable outside of the cluster
   type: LoadBalancer
+  # type: ClusterIP
+  # type: NodePort
 
 ---
 
@@ -35,10 +34,11 @@ spec:
   ports:
     - name: http
       port: 8161
-      # nodePort: 30010
+      # nodePort: 30010 # NodePort, for development
     - name: endpoint
       port: 61616
   type: ClusterIP
+  # type: NodePort
 
 ---
 

@@ -1,3 +1,5 @@
+# DaemonSet ensures that all Nodes run a copy of a Pod
+# https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
