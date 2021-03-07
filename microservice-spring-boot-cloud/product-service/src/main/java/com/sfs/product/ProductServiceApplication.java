@@ -16,5 +16,4 @@ public class ProductServiceApplication {
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
-
 }

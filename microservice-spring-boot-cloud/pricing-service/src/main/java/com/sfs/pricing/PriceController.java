@@ -10,13 +10,12 @@ import java.util.List;
 @RestController
 public class PriceController {
 
-    private List<Price> priceList = new ArrayList<>();
+    private final List<Price> priceList = new ArrayList<>();
 
     @GetMapping("/price/{productId}")
     public Price getProductPrice(@PathVariable Long productId) {
         // get price from pricing-service
-        Price price = getPriceInfo(productId);
-        return price;
+        return getPriceInfo(productId);
     }
 
     private Price getPriceInfo(Long productId) {

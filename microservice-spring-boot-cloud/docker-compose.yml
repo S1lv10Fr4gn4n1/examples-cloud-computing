@@ -1,0 +1,22 @@
+version: '3.1'
+services:
+  product:
+    build: product-service
+    image: product-service
+    hostname: product-service
+    ports:
+      - 8001:8001
+
+  pricing:
+    build: pricing-service
+    image: pricing-service
+    hostname: pricing-service
+    ports:
+      - 8002:8002
+
+  inventory:
+    build: inventory-service
+    image: inventory-service
+    hostname: inventory-service
+    ports:
+      - 8003:8003

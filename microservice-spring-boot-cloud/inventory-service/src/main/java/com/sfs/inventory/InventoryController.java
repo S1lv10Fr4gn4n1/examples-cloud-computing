@@ -10,13 +10,12 @@ import java.util.List;
 @RestController
 public class InventoryController {
 
-    private List<Inventory> inventoryList = new ArrayList<>();
+    private final List<Inventory> inventoryList = new ArrayList<>();
 
     @GetMapping("/inventory/{productId}")
     public Inventory getInventoryDetais(@PathVariable Long productId) {
         // get price from pricing-service
-        Inventory inventory = getInventoryInfo(productId);
-        return inventory;
+        return getInventoryInfo(productId);
     }
 
     private Inventory getInventoryInfo(Long productId) {
@@ -27,7 +26,6 @@ public class InventoryController {
                 return inventory;
             }
         }
-
         return null;
     }
 
