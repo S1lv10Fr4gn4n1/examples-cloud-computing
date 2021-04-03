@@ -1,0 +1,47 @@
+alias helm="docker run -ti --rm -v $(pwd):/apps -w /apps \
+    -v ~/.kube:/root/.kube -v ~/.helm:/root/.helm -v ~/.config/helm:/root/.config/helm \
+    -v ~/.cache/helm:/root/.cache/helm \
+    alpine/helm:3.5.3"
+    
+helm repo add jenkins https://charts.jenkins.io
+helm repo add stable https://charts.helm.sh/stable
+
+helm repo update 
+
+helm install stable/mysql --generate-name
+
+helm search repo stable
+
+helm ls
+
+helm status smiling-penguin
+
+helm uninstall smiling-penguin
+
+
+----------------------------------------------------------------
+
+get parameters to overide by yaml
+
+helm show values jenkins/jenkins > values.yaml
+
+helm install -f values.yaml jenkins/jenkins --generate-name
+
+
+-----------------------------------------------------------------
+
+https://www.baeldung.com/kubernetes-helm
+
+helm create hello-world
+
+helm lint ./hello-world
+
+helm template ./hello-world
+
+helm install hello-world ./hello-world
+
+helm upgrade hello-world ./hello-world
+
+helm rollback hello-world 1
+
+helm delete hello-world
