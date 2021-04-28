@@ -1,0 +1,15 @@
+apiVersion: v2
+name: app
+description: A Helm chart for any application
+type: application
+version: 0.1.0
+appVersion: 1.16.0
+keywords:
+  - app
+  - java
+  - javascript
+  - angular
+home: https://github.com/s1lv10fr4gn4n1-org/cv-helm
+maintainers:
+  - name: S1lv10Fr4gn4n1
+    url: https://github.com/S1lv10Fr4gn4n1
