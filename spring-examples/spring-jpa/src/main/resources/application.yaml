@@ -1,0 +1,18 @@
+spring:
+  jpa:
+    database: POSTGRESQL
+    show-sql: true
+    generate-ddl: true
+    # drop n create table again, good for testing, comment this in production
+    hibernate:
+      ddl-auto: create
+  datasource:
+    platform: postgres
+    url: jdbc:postgresql://localhost:5432/example
+    username: postgres
+    password: root
+
+logging:
+  level:
+    org: INFO
+#    root: debug

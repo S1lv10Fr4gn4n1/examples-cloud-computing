@@ -1,0 +1,28 @@
+spring:
+  kafka:
+#    consumer:
+    bootstrap-servers: ${BOOTSTRAP_SERVERS:localhost:9092}
+
+#      key-serializer: org.springframework.kafka.support.serializer.
+#      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+#      properties:
+#        spring:
+#          json:
+#            trusted:
+#              packages: *
+#    producer:
+#      bootstrap-servers: ${BOOTSTRAP_SERVERS:localhost:9092,localhost:9093,localhost:9094}
+#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+kafka:
+  topic:
+    name_increase: "name_increment"
+    name_decrease: "name_decrement"
+  config:
+    partitions: 10
+    replicas: 3
+
+logging:
+  level:
+    org: INFO
