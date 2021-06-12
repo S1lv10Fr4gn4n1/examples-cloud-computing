@@ -1,0 +1,27 @@
+version: '3.1'
+
+# in case of issues with authentication, use the following command to recreate volumes and containers
+# docker-compose up --build --force-recreate --renew-anon-volumes
+
+services:
+  mongo:
+    image: mongo:4.4.6
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: abacate
+      MONGO_INITDB_DATABASE: example
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data:/data/db
+
+  mongo-express:
+    image: mongo-express:0.54.0
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: abacate
+
+volumes:
+  mongodb_data:

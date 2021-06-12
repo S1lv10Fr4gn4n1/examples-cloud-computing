@@ -1,0 +1,6 @@
+spring:
+  data:
+    mongodb:
+      auto-index-creation: true
+      # from mongo 3.0 java driver, host and port cannot be set at above
+      uri: mongodb://root:abacate@localhost:27017/example?authSource=admin&authMechanism=SCRAM-SHA-1
