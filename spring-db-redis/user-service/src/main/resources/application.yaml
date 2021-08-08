@@ -1,0 +1,30 @@
+server:
+  port: 8081
+
+logging:
+  level:
+#    root: DEBUG
+    org:
+      springframework: INFO
+      hibernate: INFO
+---
+
+spring:
+  jpa:
+    database: POSTGRESQL
+    show-sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update # create, create-drop, validate, and update
+  datasource:
+    platform: postgres
+    url: jdbc:postgresql://${DATABASE_URL:localhost:5432/user}
+    username: ${DATABASE_USER:user}
+    password: ${DATABASE_PASS:user}
+
+---
+
+redis:
+  hostName: ${REDIS_HOSTNAME:localhost}
+  port: ${REDIS_PORT:6379}
+  password: ${REDIS_PASSWORD:redis-user}
