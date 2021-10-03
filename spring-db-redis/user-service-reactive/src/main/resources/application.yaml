@@ -1,0 +1,38 @@
+server:
+  port: 8081
+
+logging:
+  level:
+    root: INFO
+    org:
+      springframework: DEBUG
+    io.r2dbc.postgresql.QUERY: DEBUG
+    io.r2dbc.postgresql.PARAM: DEBUG
+---
+
+spring:
+  jpa:
+    database: POSTGRESQL
+    show-sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+  r2dbc:
+    url: r2dbc:postgresql://${DATABASE_URL:localhost:5432/user}
+    username: ${DATABASE_USER:user}
+    password: ${DATABASE_PASS:user}
+
+---
+
+redis:
+  hostName: ${REDIS_HOSTNAME:localhost}
+  port: ${REDIS_PORT:6379}
+  password: ${REDIS_PASSWORD:redis-user}
+
+spring:
+  data:
+    redis:
+      repositories:
+        type: none
+        enabled: false
+---
