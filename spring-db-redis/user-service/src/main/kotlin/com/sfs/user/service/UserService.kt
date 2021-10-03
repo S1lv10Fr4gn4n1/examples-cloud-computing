@@ -10,9 +10,9 @@ interface UserService {
 
     fun searchByName(name: String, page: Int, size: Int): List<User>
 
-    fun add(user: User)
+    fun add(user: User): User
 
-    fun update(user: User)
+    fun update(id: String, user: User): User
 
     fun delete(id: String)
 }

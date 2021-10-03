@@ -1,7 +1,6 @@
 package com.sfs.user.controller.model
 
-class UpdateUserRequest(
-    val id: String,
+class UserRequest(
     val name: String,
     val email: String
 )

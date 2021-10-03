@@ -1,11 +1,12 @@
 package com.sfs.user.service
 
 import com.sfs.user.service.UserServiceImpl.Companion.USER_CACHE
+import com.sfs.user.service.exception.UserNotFound
+import com.sfs.user.service.id.IdGenerator
 import com.sfs.user.service.mapper.UserEntityMapper
 import com.sfs.user.service.mapper.UserMapper
 import com.sfs.user.service.model.User
 import com.sfs.user.service.repository.UserDatabaseRepository
-import com.sfs.user.service.repository.UserMemoryRepository
 import org.springframework.cache.annotation.CacheConfig
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
@@ -16,13 +17,13 @@ import org.springframework.stereotype.Service
 @Service
 @CacheConfig(cacheNames = [USER_CACHE])
 class UserServiceImpl(
+    private val idGenerator: IdGenerator,
     private val userDatabaseRepository: UserDatabaseRepository,
-//    private val userMemoryRepository: UserMemoryRepository,
-    private val userMapper: UserMapper,
-    private val userEntityMapper: UserEntityMapper
+    private val userEntityMapper: UserEntityMapper,
+    private val userMapper: UserMapper
 ) : UserService {
 
-    @Cacheable(cacheNames = [USERS])
+    @Cacheable(cacheNames = [USERS], key = "'all_users_' + #page + '_' + #size")
     override fun getAllUsers(page: Int, size: Int): List<User> {
         val pageRequest = PageRequest.of(page, size)
         val entities = userDatabaseRepository.findAll(pageRequest)
@@ -35,30 +36,44 @@ class UserServiceImpl(
         return userMapper.apply(entity.get())
     }
 
-    @Cacheable(cacheNames = [USERS])
+    @Cacheable(cacheNames = [USERS], key = "'search_users_' + #name + '_' + #page + '_' + #size")
     override fun searchByName(name: String, page: Int, size: Int): List<User> {
         val entities = userDatabaseRepository.findByNameContainsIgnoreCase(name)
         return entities.map(userMapper::apply)
     }
 
-    @CacheEvict(cacheNames = [USERS], allEntries = true)
-    override fun add(user: User) {
+    // not the best eviction strategy, but good for now
+    @Caching(
+        evict = [CacheEvict(cacheNames = [USER], key = "#id"), CacheEvict(cacheNames = [USERS], allEntries = true)]
+    )
+    override fun add(user: User): User {
+        val id = idGenerator.getId(user.email)
         val entity = userEntityMapper.apply(user)
-        userDatabaseRepository.save(entity)
+        val updatedEntity = userDatabaseRepository.save(entity.copy(id = id))
+        return userMapper.apply(updatedEntity)
     }
 
-    @CacheEvict(cacheNames = [USERS], allEntries = true)
-    override fun update(user: User) {
-        val optional = userDatabaseRepository.findById(user.id)
+    // not the best eviction strategy, but good for now
+    @Caching(
+        evict = [CacheEvict(cacheNames = [USER], key = "#id"), CacheEvict(cacheNames = [USERS], allEntries = true)]
+    )
+    override fun update(id: String, user: User): User {
+        val optional = userDatabaseRepository.findById(id)
         if (!optional.isPresent) {
-            return
+            throw UserNotFound()
         }
 
-        val entity = userEntityMapper.apply(user)
-        userDatabaseRepository.save(entity)
+        val entity = optional.get()
+        val updatedEntity = userDatabaseRepository.save(
+            entity.copy(
+                name = user.name,
+                email = user.email
+            )
+        )
+        return userMapper.apply(updatedEntity)
     }
 
-    // TODO SFS test it, it shouldn't delete all entries
+    // not the best eviction strategy, but good for now
     @Caching(
         evict = [CacheEvict(cacheNames = [USER], key = "#id"), CacheEvict(cacheNames = [USERS], allEntries = true)]
     )
