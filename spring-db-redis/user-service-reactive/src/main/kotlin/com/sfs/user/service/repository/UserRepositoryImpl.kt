@@ -25,8 +25,7 @@ class UserRepositoryImpl(
     private val userToEntityMapper: UserToEntityMapper,
     private val entityToUserMapper: UserEntityToUserMapper,
     private val entityToMemoryMapper: UserEntityToUserMemoryMapper,
-    private val memoryToUserMapper: UserMemoryToUserMapper,
-    private val userToMemoryMapper: UserToMemoryMapper
+    private val memoryToUserMapper: UserMemoryToUserMapper
 ) : UserRepository {
 
     override fun getAllUsers(page: Int, size: Int): Flux<User> {

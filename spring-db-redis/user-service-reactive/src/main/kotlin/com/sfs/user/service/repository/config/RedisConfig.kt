@@ -38,26 +38,6 @@ class RedisConfig {
         return LettuceConnectionFactory(configuration)
     }
 
-//    @Bean
-//    fun redisTemplate(connectionFactory: LettuceConnectionFactory) =
-//        RedisTemplate<String, Serializable>().apply {
-//            setConnectionFactory(connectionFactory)
-//        }
-//
-//    @Bean
-//    fun cacheManager(factory: RedisConnectionFactory): CacheManager {
-//        val redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
-//            .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer()))
-//            .serializeValuesWith(
-//                RedisSerializationContext.SerializationPair.fromSerializer(GenericJackson2JsonRedisSerializer())
-//            )
-//
-//        return RedisCacheManager
-//            .builder(factory)
-//            .cacheDefaults(redisCacheConfiguration)
-//            .build()
-//    }
-
     @Bean
     fun reactiveRedisTemplate(factory: ReactiveRedisConnectionFactory): ReactiveRedisTemplate<String, UserMemory> {
         val keySerializer = StringRedisSerializer()
