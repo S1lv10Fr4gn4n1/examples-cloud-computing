@@ -1,0 +1,15 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    data: classpath:cars.sql
+    driverClassName: org.h2.Driver
+    password: password
+    schema: classpath:create_car_table.sql
+    url: jdbc:h2:mem:testdb
+    username: sa
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: none
